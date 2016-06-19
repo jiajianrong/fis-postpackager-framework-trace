@@ -1,52 +1,14 @@
 'use strict';
 
 /*
-
-var fStr = (function () {
-    
-    document.body.addEventListener( 'click', function(e){
-        
-        var traceElement = e.target,
-            traceObject;
-        
-        while( !traceElement.getAttribute('data-trace') && traceElement.parentNode!==document.body ) {
-            traceElement = traceElement.parentNode;
-        }
-        
-        // 没有 [data-trace] 代理则返回
-        if ( traceElement===document.body) {
-            return true;
-        }
-        
-        
-        // 计算traceObject
-        traceObject = traceElement.getAttribute('data-trace');
-        traceObject = /\{/.test(traceObject) ? JSON.parse(traceObject) : { tid: +traceObject };
-        
-        
-        // 当前trace元素是a标签？
-        if ( traceElement.tagName.toLowerCase()==='a' ) {
-            var url = traceObject.tgtUrl = traceElement.getAttribute('href');
-            if ( ! /(?:^#)|(?:^tel\:)/i.test(url) ) {
-                e.preventDefault();
-            }   
-        }
-        
-        
-        // 发送打点
-        if ( require && require.has && require.has('libs/core.trace') ) {
-            var coreTrace = require('libs/core.trace');
-            coreTrace.send( traceObject );
-        }
-        
-        return true;
-    } );
-    
-})
-.toString();
-
-
-
+ * 2016-6-19
+ * jiajianrong@58.com
+ * 
+ * 此处只简单requie('libs/core.trace')
+ * 
+ * 所有逻辑均已移至
+ * https://github.com/jiajianrong/jr8-proj-demo/blob/master/static/libs/core.trace.js
+ * 
 
 
 
