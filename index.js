@@ -71,21 +71,52 @@ function _updateCoreTrace(prefix) {
 
 module.exports = function (ret, conf, settings, opt) {
     
-    var coretrace = ret.map.res['static/libs/core.trace.js'],
-        coretraceUri = coretrace.uri;
+    var traceModId = settings.traceModId || 'libs/core.trace',
+        traceModUrl;
+    
+    fis.util.map(ret.src, function(subpath, file) {
+        if ( file.isJsLike && file.id.indexOf(traceModId) !== -1 ) {
+            traceModUrl = file.url;
+        }
+    });
+    
     
     // 为页面文件增加core.trace
     fis.util.map(ret.src, function(subpath, file) {
         
         if (file.isHtmlLike && file.isViews && file.useTrace!==false) {
             
+            // 当前view对应的js文件
+            var jsName = file.id.replace(/\.vm/, '.js'),
+                hasJs = false;
+            
+            
+            // 2016-7-12 jiajianrong
+            // 遍历js文件，加入trace依赖
+            fis.util.map(ret.src, function(subpath, file) {
+                if (file.isJsLike && file.id===jsName) {
+                    file.requires.unshift(traceModId);
+                    hasJs = true;
+                }
+            });
+            
+            
             var content = file.getContent();
             
-            // </body>结束 --- 引入coretrace
+            // </body>结束
             content = content.replace(/(\<\s*\/\s*body\s*\>)/ig, function() {
                 // 逻辑转移到coretrace
                 // #[[<script> document.addEventListener( "DOMContentLoaded", ' + fStr + ' )</script>]]#
-                return '\n    <script src="' + coretraceUri + '"></script> \n    <script>require("libs/core.trace");</script> \n' + RegExp.$1;
+                
+                // ---------------------
+                // 2016-7-12 jiajianrong
+                // 不直接输出标签，改为输出至file.requires数组
+                // ---------------------
+                var str = '\n    <script>require("' + traceModId + '");</script> \n' + RegExp.$1;
+                if (!hasJs) {
+                    str = '\n    <script src="' + traceModUrl + '"></script>' + str;
+                }
+                return str;
             });
             
             file.setContent(content);
