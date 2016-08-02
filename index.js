@@ -88,15 +88,17 @@ module.exports = function (ret, conf, settings, opt) {
             
             // 当前view对应的js文件
             var jsName = file.id.replace(/\.vm/, '.js'),
-                hasJs = false;
+                coretraceInDeps = false,
+                hasFramework = /\b__FRAMEWORK_CONFIG__\b/g.test(file.getContent());
             
             
             // 2016-7-12 jiajianrong
             // 遍历js文件，加入trace依赖
             fis.util.map(ret.src, function(subpath, file) {
-                if (file.isJsLike && file.id===jsName) {
+                // 当前vm存在对应的js文件
+                if ( file.isJsLike && file.id===jsName ) {
                     file.requires.unshift(traceModId);
-                    hasJs = true;
+                    coretraceInDeps = true;
                 }
             });
             
@@ -113,7 +115,7 @@ module.exports = function (ret, conf, settings, opt) {
                 // 不直接输出标签，改为输出至file.requires数组
                 // ---------------------
                 var str = '\n    <script>require("' + traceModId + '");</script> \n' + RegExp.$1;
-                if (!hasJs) {
+                if ( !coretraceInDeps || !hasFramework ) {
                     str = '\n    <script src="' + traceModUrl + '"></script>' + str;
                 }
                 return str;
